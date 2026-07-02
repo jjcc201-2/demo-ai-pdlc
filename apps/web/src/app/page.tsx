@@ -51,23 +51,31 @@ export default function Home() {
 
   return (
     <div>
-      <h1>Start a new PDLC run</h1>
+      <h1>Start a new run</h1>
+      <p className="muted small">
+        Upload a Teams meeting transcript. The AI will analyze it, grill you for consensus on business value, draft a BRD, review it, and publish.
+      </p>
 
-      {health === "loading" && <p style={{ color: "#666" }}>Checking API…</p>}
+      {health === "loading" && <p className="muted small">Checking API…</p>}
       {health === null && (
-        <div className="card" style={{ borderColor: "#fca5a5", background: "#fef2f2" }}>
+        <div className="card danger">
           <strong>⚠️ API is not reachable at <code>{API_BASE}</code>.</strong>
-          <p style={{ margin: "8px 0 0" }}>
-            Open a terminal and run <code>pnpm dev:api</code> in the project root, then reload this page.
+          <p style={{ margin: "8px 0 0" }} className="small">
+            Open a terminal and run <code>pnpm dev-api</code> in the project root, then reload this page.
           </p>
         </div>
       )}
       {health && typeof health !== "string" && (
-        <p style={{ color: "#166534", fontSize: 12 }}>
-          ✓ API reachable at <code>{API_BASE}</code>
-          {" · "}Graph transcript: {health.features.graphTranscript ? "enabled" : "not configured"}
-          {" · "}GitHub publisher: {health.features.githubPublisher ? "enabled" : "not configured"}
-        </p>
+        <div className="row small" style={{ marginBottom: 12 }}>
+          <span className="pill done">API online</span>
+          <span className="pill pending">
+            Graph: {health.features.graphTranscript ? "on" : "off"}
+          </span>
+          <span className="pill pending">
+            GitHub publisher: {health.features.githubPublisher ? "on" : "off"}
+          </span>
+          <span className="muted">· {API_BASE}</span>
+        </div>
       )}
 
       <div className="card">
@@ -77,25 +85,25 @@ export default function Home() {
           <label>Transcript (.vtt / .docx / .txt)</label>
           <input type="file" accept=".vtt,.docx,.txt" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
         </div>
-        <div style={{ marginTop: 12 }}>
-          <button className="primary" onClick={start} disabled={busy}>
-            {busy ? "Starting…" : "Start run"}
+        <div style={{ marginTop: 16 }}>
+          <button className="primary" onClick={start} disabled={busy || health === null}>
+            {busy ? "Starting run…" : "Start run"}
           </button>
         </div>
-        {error && <p style={{ color: "crimson" }}>{error}</p>}
+        {error && <div className="card danger" style={{ margin: "12px 0 0" }}><strong>Error:</strong> {error}</div>}
       </div>
 
       <h2>Recent runs</h2>
-      {runs.length === 0 && <p style={{ color: "#666" }}>No runs yet.</p>}
+      {runs.length === 0 && <p className="muted">No runs yet.</p>}
       {runs.map((r) => (
         <div key={r.runId} className="card">
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <div className="row" style={{ justifyContent: "space-between" }}>
             <a href={`/runs/${r.runId}/grill`}><code>{r.runId}</code></a>
-            <span style={{ color: "#666" }}>{new Date(r.createdAt).toLocaleString()}</span>
+            <span className="muted small">{new Date(r.createdAt).toLocaleString()}</span>
           </div>
-          <div style={{ marginTop: 6, display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <div className="stepper" style={{ marginTop: 10 }}>
             {Object.entries(r.stages).map(([k, v]) => (
-              <span key={k} className={`pill ${v.status}`}>{k}: {v.status}</span>
+              <span key={k} className={`step ${v.status}`}>{k}</span>
             ))}
           </div>
         </div>
