@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.next/
+.turbo/
+*.tsbuildinfo
+.env
+.env.local
+runs/
+out/
+!runs/.gitkeep
+!out/.gitkeep
+coverage/
+.DS_Store
