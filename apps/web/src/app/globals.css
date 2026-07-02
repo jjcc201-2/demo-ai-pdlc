@@ -255,7 +255,7 @@ code {
 .pill.done { background: rgba(45, 212, 191, 0.15); color: var(--teal-2); border-color: rgba(45, 212, 191, 0.4); box-shadow: 0 0 12px -4px rgba(45, 212, 191, 0.4); }
 .pill.error { background: rgba(248, 113, 113, 0.15); color: var(--danger); border-color: rgba(248, 113, 113, 0.4); }
 
-/* Stage stepper */
+/* Stage stepper (used on run cards on home page) */
 .stepper { display: flex; gap: 6px; flex-wrap: wrap; margin: 0.5rem 0 1rem; }
 .stepper .step {
   display: inline-flex;
@@ -271,6 +271,121 @@ code {
 .stepper .step.done { border-color: rgba(45, 212, 191, 0.4); color: var(--teal-2); }
 .stepper .step.in_progress { border-color: rgba(59, 130, 246, 0.5); color: var(--electric-2); box-shadow: 0 0 12px -4px rgba(59, 130, 246, 0.5); }
 .stepper .step.error { border-color: rgba(248, 113, 113, 0.5); color: var(--danger); }
+
+/* Run stage nav (sits below header, above page body) */
+.run-nav {
+  position: sticky;
+  top: 74px;
+  z-index: 5;
+  background: rgba(11, 18, 32, 0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  margin: -2rem -1.25rem 1.5rem;
+}
+.run-nav-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 12px 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  overflow-x: auto;
+}
+.run-nav-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--slate-500);
+  flex-shrink: 0;
+}
+.run-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.run-nav-item {
+  display: inline-flex;
+  align-items: center;
+}
+.run-nav-item > a,
+.run-nav-item > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--slate-500);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+.run-nav-item.clickable > a { cursor: pointer; color: var(--slate-300); }
+.run-nav-item.clickable > a:hover {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--electric-2);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+.run-nav-item:not(.clickable) > span { cursor: not-allowed; opacity: 0.55; }
+.run-nav-item.active > a {
+  background: rgba(59, 130, 246, 0.18);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: var(--slate-100);
+  box-shadow: 0 0 12px -4px rgba(59, 130, 246, 0.5);
+}
+.run-nav-item.done:not(.active) > a,
+.run-nav-item.done:not(.active) > span { color: var(--teal-2); }
+
+.run-nav-num {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.1);
+  font-size: 11px;
+  font-weight: 600;
+  color: inherit;
+}
+.run-nav-item.done .run-nav-num { background: rgba(45, 212, 191, 0.2); color: var(--teal-2); }
+.run-nav-item.in_progress .run-nav-num { background: rgba(59, 130, 246, 0.25); color: var(--electric-2); }
+.run-nav-item.error .run-nav-num { background: rgba(248, 113, 113, 0.2); color: var(--danger); }
+.run-nav-item.active .run-nav-num { background: var(--electric); color: #fff; }
+
+.run-nav-name { font-weight: 500; }
+
+.run-nav-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.3);
+}
+.run-nav-dot.done { background: var(--teal); box-shadow: 0 0 8px var(--teal); }
+.run-nav-dot.in_progress {
+  background: var(--electric);
+  box-shadow: 0 0 8px var(--electric);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.run-nav-dot.error { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+
+.run-nav-sep {
+  color: var(--slate-600);
+  margin: 0 2px;
+  font-size: 14px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+
+@media (max-width: 700px) {
+  .run-nav-name { display: none; }
+  .run-nav-inner { gap: 8px; }
+}
 
 /* Chat-style Q&A */
 .chat { display: flex; flex-direction: column; gap: 12px; }
