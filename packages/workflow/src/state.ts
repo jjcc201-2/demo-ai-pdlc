@@ -95,8 +95,11 @@ export interface WorkflowState {
   grilling?: GrillingResult;
   brd?: BrdDocument;
   brdMarkdown?: string;
+  brdEditedByUser?: boolean;
   review?: ReviewResult;
   publish?: PublishRefs;
+  /** Transient flag consumed by the publish stage to bypass critical-finding blocking. */
+  publishForce?: boolean;
 }
 
 export function createInitialState(runId: string, model: string): WorkflowState {

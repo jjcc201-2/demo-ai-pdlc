@@ -115,7 +115,36 @@ app.post("/api/runs/:id/transcript/graph", async (req, res, next) => {
 // --- Advance a stage ---------------------------------------------------
 app.post("/api/runs/:id/stages/:stage/run", async (req, res, next) => {
   try {
-    const state = await orchestrator.runStage(req.params.id, req.params.stage as any);
+    const stage = req.params.stage as any;
+    // Allow `{force: true}` on the publish stage to bypass critical-finding blocking.
+    if (stage === "publish" && req.body?.force === true) {
+      const s = await store.load(req.params.id);
+      s.publishForce = true;
+      // Reset a previously errored publish stage so the orchestrator will re-run it.
+      if (s.stages.publish.status === "error" || s.stages.publish.status === "done") {
+        s.stages.publish = { status: "pending" };
+      }
+      await store.save(s);
+    }
+    const state = await orchestrator.runStage(req.params.id, stage);
+    res.json(state);
+  } catch (e) { next(e); }
+});
+
+// --- Manually edit the BRD markdown before publishing ------------------
+app.put("/api/runs/:id/brd", async (req, res, next) => {
+  try {
+    const { markdown } = req.body ?? {};
+    if (typeof markdown !== "string" || markdown.trim().length === 0) {
+      return res.status(400).json({ error: "markdown required" });
+    }
+    const state = await store.load(req.params.id);
+    state.brdMarkdown = markdown;
+    state.brdEditedByUser = true;
+    // The user just edited: mark review + publish as pending again so they can re-run.
+    state.stages.review = { status: "pending" };
+    state.stages.publish = { status: "pending" };
+    await store.save(state);
     res.json(state);
   } catch (e) { next(e); }
 });

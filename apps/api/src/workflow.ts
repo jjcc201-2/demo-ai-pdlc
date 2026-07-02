@@ -116,9 +116,11 @@ export function buildWorkflow(agent: AgentClient): WorkflowServices {
     },
     publish: async (state) => {
       if (!state.brdMarkdown || !state.brd) throw new Error("publish: nothing to publish");
-      if (state.review && !state.review.passed) {
+      const critical = state.review?.findings.filter((f) => f.severity === "critical") ?? [];
+      if (critical.length > 0 && !state.publishForce) {
         throw new Error(
-          `publish: blocked by ${state.review.findings.filter((f) => f.severity === "critical").length} critical review finding(s)`,
+          `publish: blocked by ${critical.length} critical review finding(s). ` +
+            `Edit the BRD or retry with force=true to override.`,
         );
       }
       const slug = slugify(state.brd.title);
@@ -127,6 +129,7 @@ export function buildWorkflow(agent: AgentClient): WorkflowServices {
         Object.assign(refs, await p.publish({ slug, markdown: state.brdMarkdown }));
       }
       state.publish = refs;
+      state.publishForce = false;
       return state;
     },
   };
