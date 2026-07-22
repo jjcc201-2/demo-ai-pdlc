@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { API_BASE, api, checkApiHealth, type HealthInfo } from "@/lib/api";
+import { API_BASE, api, authHeaders, checkApiHealth, type HealthInfo } from "@/lib/api";
 
 interface RunSummary {
   runId: string;
@@ -34,7 +34,7 @@ export default function Home() {
       if (subject) fd.append("subject", subject);
       let up: Response;
       try {
-        up = await fetch(`${API_BASE}/api/runs/${run.runId}/transcript/upload`, { method: "POST", body: fd });
+        up = await fetch(`${API_BASE}/api/runs/${run.runId}/transcript/upload`, { method: "POST", body: fd, headers: authHeaders() });
       } catch (e) {
         throw new Error(
           `Could not reach the API at ${API_BASE} while uploading. Is the API server running? Start it with \`pnpm dev:api\`.`,

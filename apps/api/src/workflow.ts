@@ -10,6 +10,7 @@ import {
   analyzeTranscript,
   draftBrd,
   nextGrillingQuestion,
+  planAdoWorkItems,
   reviewBrd,
   type AgentClient,
 } from "@pdlc/agents";
@@ -20,7 +21,7 @@ import {
   LocalPublisher,
   type Publisher,
 } from "@pdlc/publisher";
-import { config, githubPublisherConfigured } from "./config.js";
+import { adoAgentConfigured, config, githubPublisherConfigured } from "./config.js";
 import { slugify } from "./util.js";
 
 export interface WorkflowServices {
@@ -130,6 +131,33 @@ export function buildWorkflow(agent: AgentClient): WorkflowServices {
       }
       state.publish = refs;
       state.publishForce = false;
+      return state;
+    },
+    ado: async (state) => {
+      // Stage 7 is a no-op when the ADO integration is not configured.
+      // The stage still marks itself "done" so the workflow can complete.
+      if (!adoAgentConfigured()) return state;
+      if (!state.brd || !state.brdMarkdown) {
+        throw new Error("ado: BRD missing — publish must complete first");
+      }
+      if (state.stages.publish.status !== "done") {
+        throw new Error("ado: publish must complete before stage 7 can plan");
+      }
+      const project = state.adoTargetProject ?? config.ado.defaultProject;
+      if (!project) {
+        throw new Error(
+          "ado: no target project — set PDLC_ADO_DEFAULT_PROJECT or POST /api/runs/:id/ado/target before running this stage.",
+        );
+      }
+      state.adoPlan = await planAdoWorkItems(agent, state.brd, {
+        organization: config.ado.organization!,
+        project,
+        runId: state.runId,
+      });
+      state.adoPlansByProject = {
+        ...(state.adoPlansByProject ?? {}),
+        [project]: state.adoPlan,
+      };
       return state;
     },
   };
