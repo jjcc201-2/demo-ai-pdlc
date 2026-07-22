@@ -14,7 +14,7 @@ An AI workflow, built on the [GitHub Copilot SDK](https://github.com/github/copi
 - [Testing](#testing)
 - [Configuration](#configuration)
   - [Core env vars](#core-env-vars)
-  - [Azure DevOps (stage 7)](#azure-devops-stage-7)
+  - [Work Items stage (Azure DevOps)](#work-items-stage-azure-devops)
   - [API access control](#api-access-control)
 - [Extending the publisher](#extending-the-publisher)
 - [Operational notes](#operational-notes)
@@ -29,7 +29,7 @@ The workflow runs as a pipeline of stages, each backed by a Copilot SDK agent:
 4. **Draft** — fill a standard BRD from a Zod-validated template.
 5. **Review** — schema + LLM review; publish is blocked on critical findings.
 6. **Publish** — write BRD markdown to `./out/` and (optionally) commit to a GitHub repo.
-7. **Azure DevOps** *(optional)* — turn the BRD into an Epic -> Feature -> User Story tree in Azure DevOps.
+7. **Work Items** *(optional)* — turn the BRD into an Epic -> Feature -> User Story tree in Azure DevOps.
 
 ## Project structure
 
@@ -50,12 +50,17 @@ packages/
 **Required:**
 - Node.js `>=22.12.0`
 - pnpm `>=9`
-- A GitHub Copilot subscription (or BYOK - see the SDK docs) - the SDK signs in via `copilot` CLI OAuth, or set `COPILOT_GITHUB_TOKEN`.
+- A GitHub Copilot subscription (or BYOK - see the SDK docs).
+- **GitHub Copilot authentication** — you must be signed in before running the app, via **either**:
+  - the [`copilot` CLI](https://github.com/github/copilot-cli) (recommended for local dev — install it and complete its login flow so the SDK can reuse the cached OAuth credentials), **or**
+  - a Copilot token set as `COPILOT_GITHUB_TOKEN` (or `GITHUB_TOKEN`) in your `.env` (recommended for CI / headless).
+
+  See [GitHub Copilot authentication](#github-copilot-authentication-required) under Setup for details.
 
 **Optional, depending on which features you use:**
 - Microsoft Graph app registration with `OnlineMeetingTranscript.Read.All`, for automatic transcript fetch (otherwise, upload a file manually).
 - A GitHub PAT with `contents:write` on the target repo, for the GitHub publisher.
-- The [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) plus a signed-in session (`az login`), to push work items into Azure DevOps. Stage 7 uses `DefaultAzureCredential`, which picks up your `az login` credentials automatically in local dev.
+- The [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) plus a signed-in session (`az login`), to push work items into Azure DevOps. The Work Items stage uses `DefaultAzureCredential`, which picks up your `az login` credentials automatically in local dev.
 
 ## Getting started
 
@@ -66,9 +71,35 @@ pnpm install
 cp .env.example .env    # fill in what you have
 pnpm build
 
-# Optional - only if you want stage 7 to create work items in Azure DevOps:
+# Optional - only if you want the Work Items stage to create work items in Azure DevOps:
 az login
 ```
+
+#### GitHub Copilot authentication (required)
+
+The agents call models through the GitHub Copilot SDK, so **you must be
+authenticated to GitHub Copilot before running the app.** Use either option:
+
+- **Sign in via the Copilot CLI (recommended for local dev)** — install the
+  [`copilot` CLI](https://github.com/github/copilot-cli) and run its login
+  flow. The SDK picks up the cached OAuth credentials automatically, so no
+  environment variable is needed:
+
+  ```bash
+  copilot   # launch and complete the /login flow if prompted
+  ```
+
+- **Provide a Copilot token (recommended for CI / headless)** — set
+  `COPILOT_GITHUB_TOKEN` (or `GITHUB_TOKEN`) in your `.env` to a token from a
+  GitHub account with an active Copilot subscription:
+
+  ```bash
+  COPILOT_GITHUB_TOKEN=ghu_xxxxxxxxxxxxxxxxxxxx
+  ```
+
+If neither is present, agent stages (analyze, grill, draft, review, and the
+Work Items plan) will fail to authenticate. A GitHub Copilot subscription (or
+a BYOK setup — see the SDK docs) is required either way.
 
 ### Run the app
 
@@ -96,8 +127,42 @@ pnpm dev-web
 
 ### Non-interactive CLI
 
+> **Purpose:** the CLI is a **developer smoke-test harness**, not the product.
+> It exists to quickly exercise the agents (analyzer, griller, drafter,
+> reviewer, publisher) end-to-end from a terminal — so you can validate that
+> the pipeline runs and the Copilot SDK wiring works after a code change,
+> without spinning up the API + web servers.
+>
+> It is **not** the full experience. Several stages are intentionally
+> simplified or unavailable compared to the web UI:
+>
+> - **BRD review is not fully available** — the CLI only reports whether the
+>   review passed and blocks on critical findings. You cannot inspect,
+>   discuss, or resolve individual findings, and there is no way to edit the
+>   BRD and re-review. Your only options are pass, or override with `--force`.
+> - **No BRD editing** — the drafted BRD is published as-is; the web UI's
+>   review-and-edit loop is skipped entirely.
+> - **Grilling is linear** — questions are answered one line at a time via
+>   stdin with no ability to revisit earlier answers.
+> - **No Work Items stage** — the CLI stops after publish; the Work Items stage
+>   (Azure DevOps work-item generation) is web-UI only.
+>
+> For the complete workflow — reviewing/editing the BRD, resolving findings,
+> and generating Azure DevOps work items — use the web UI (`pnpm dev-web`).
+
+Run the pipeline from the terminal against a local transcript file:
+
 ```powershell
 pnpm cli tests/fixtures/sample.vtt --subject "Portal ideation"
+```
+
+Grilling questions are answered interactively via stdin. If the review stage
+raises **critical** findings it blocks publishing and exits with code `2` (the
+same gate the web UI enforces, minus the ability to resolve findings). Add
+`--force` to override and publish anyway:
+
+```powershell
+pnpm cli tests/fixtures/sample.vtt --subject "Portal ideation" --force
 ```
 
 ## Testing
@@ -119,9 +184,9 @@ The e2e test uses `MockAgentClient` with canned JSON responses, so it runs the f
 
 See `.env.example` for the full list, including Microsoft Graph and GitHub publisher settings.
 
-### Azure DevOps (stage 7)
+### Work Items stage (Azure DevOps)
 
-Stage 7 is optional. When enabled, an autonomous Copilot SDK agent runs after
+The Work Items stage is optional. When enabled, an autonomous Copilot SDK agent runs after
 `publish` and turns the finalised BRD into a work-item tree in Azure DevOps.
 It has two sub-phases:
 
@@ -136,7 +201,7 @@ Configuration:
 
 | Env var | Purpose |
 | --- | --- |
-| `PDLC_ADO_ORG` | Azure DevOps organisation (e.g. `contoso-39811`). Unset -> stage 7 disabled. |
+| `PDLC_ADO_ORG` | Azure DevOps organisation (e.g. `contoso-39811`). Unset -> Work Items stage disabled. |
 | `PDLC_ADO_DEFAULT_PROJECT` | Default project. Overridable per run via the dropdown on the ADO page. |
 | `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET` | Service principal (prod). Optional in dev. |
 

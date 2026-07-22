@@ -134,14 +134,14 @@ export function buildWorkflow(agent: AgentClient): WorkflowServices {
       return state;
     },
     ado: async (state) => {
-      // Stage 7 is a no-op when the ADO integration is not configured.
-      // The stage still marks itself "done" so the workflow can complete.
+      // The Work Items stage is a no-op when the ADO integration is not
+      // configured. The stage still marks itself "done" so the workflow can complete.
       if (!adoAgentConfigured()) return state;
       if (!state.brd || !state.brdMarkdown) {
         throw new Error("ado: BRD missing — publish must complete first");
       }
       if (state.stages.publish.status !== "done") {
-        throw new Error("ado: publish must complete before stage 7 can plan");
+        throw new Error("ado: publish must complete before the Work Items stage can plan");
       }
       const project = state.adoTargetProject ?? config.ado.defaultProject;
       if (!project) {
