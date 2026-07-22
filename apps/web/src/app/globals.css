@@ -453,7 +453,7 @@ th { color: var(--slate-300); font-size: 0.75rem; text-transform: uppercase; let
 
 
 /* ============================================================
-   Plan tree (stage 7 — Work Items preview)
+   Plan tree (Work Items stage preview)
    ============================================================ */
 .plan-tree {
   list-style: none;

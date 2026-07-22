@@ -174,21 +174,21 @@ app.post("/api/runs/:id/stages/:stage/run", async (req, res, next) => {
         // the UI can still surface the error via a manual grill run.
       }
     }
-    // After publish finishes, automatically run the ADO plan phase so the
-    // user lands on the ADO page with a preview ready to review.
+    // After publish finishes, automatically run the Work Items plan phase so
+    // the user lands on the Work Items page with a preview ready to review.
     if (stage === "publish" && state.stages.publish.status === "done" && adoAgentConfigured()) {
       try {
         const planned = await orchestrator.runStage(req.params.id, "ado");
         return res.json(planned);
       } catch {
-        // Fall back to publish result; ADO stage can be retried manually.
+        // Fall back to publish result; the Work Items stage can be retried manually.
       }
     }
     res.json(state);
   } catch (e) { next(e); }
 });
 
-// --- ADO stage 7 -------------------------------------------------------
+// --- Work Items stage (Azure DevOps) -----------------------------------
 app.get("/api/ado/config", (_req, res) => {
   res.json({
     configured: adoAgentConfigured(),
@@ -201,7 +201,7 @@ app.get("/api/ado/projects", async (_req, res, next) => {
   try {
     if (!adoAgentConfigured()) {
       return res.status(503).json({
-        error: "Azure DevOps stage 7 is not configured. Set PDLC_ADO_ORG.",
+        error: "The Work Items stage (Azure DevOps) is not configured. Set PDLC_ADO_ORG.",
       });
     }
     // Minimal, dependency-free: hit the ADO REST API using an Entra token
@@ -249,7 +249,7 @@ app.put("/api/runs/:id/ado/target", async (req, res, next) => {
 app.post("/api/runs/:id/ado/apply", async (req, res, next) => {
   try {
     if (!adoAgentConfigured()) {
-      return res.status(503).json({ error: "ADO stage 7 not configured (PDLC_ADO_ORG unset)." });
+      return res.status(503).json({ error: "The Work Items stage is not configured (PDLC_ADO_ORG unset)." });
     }
     const s = await store.load(req.params.id);
     if (!s.adoPlan) {
