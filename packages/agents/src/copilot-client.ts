@@ -35,6 +35,7 @@ export class CopilotAgentClient implements AgentClient {
       model: this.opts.model ?? "claude-sonnet-4.5",
       systemMessage: { mode: "append", content: opts.systemMessage },
       onPermissionRequest: approveAll,
+      ...(opts.mcpServers ? { mcpServers: opts.mcpServers } : {}),
     });
     try {
       const retries = opts.expectJson ? opts.jsonRetries ?? 1 : 0;
@@ -44,7 +45,7 @@ export class CopilotAgentClient implements AgentClient {
           attempt > 0
             ? "\n\nYour previous reply was not valid JSON. Return ONLY a JSON object, no code fences, no commentary."
             : "";
-        const event = await session.sendAndWait({ prompt: opts.prompt + suffix });
+        const event = await session.sendAndWait({ prompt: opts.prompt + suffix }, opts.timeoutMs);
         lastText = event?.data.content ?? "";
         if (!opts.expectJson) return lastText;
         try {

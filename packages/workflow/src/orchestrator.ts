@@ -8,7 +8,7 @@ export interface Orchestrator {
   runAll(runId: string, opts?: { stopBefore?: StageId }): Promise<WorkflowState>;
 }
 
-const ORDER: StageId[] = ["ingest", "analyze", "grill", "draft", "review", "publish"];
+const ORDER: StageId[] = ["ingest", "analyze", "grill", "draft", "review", "publish", "ado"];
 
 export function createOrchestrator(
   store: WorkflowStore,

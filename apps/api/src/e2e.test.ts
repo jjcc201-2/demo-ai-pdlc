@@ -87,6 +87,7 @@ describe("PDLC e2e happy path", () => {
         ...s,
         publish: await publisher.publish({ slug: "test", markdown: s.brdMarkdown! }),
       }),
+      ado: async (s) => s, // stage 7 no-ops when ADO isn't configured
     };
 
     const orch = createOrchestrator(store, handlers);

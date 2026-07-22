@@ -5,7 +5,7 @@
  * Grilling answers are read from stdin (one line per question) so the CLI can
  * be piped or used interactively for smoke tests.
  */
-import "dotenv/config";
+import "./load-env.js";
 import path from "node:path";
 import readline from "node:readline/promises";
 import { promises as fs } from "node:fs";
