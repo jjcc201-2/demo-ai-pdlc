@@ -11,7 +11,7 @@
   "portsAttributes": {
     "3000": {
       "label": "Next.js UI",
-      "onAutoForward": "openPreview"
+      "onAutoForward": "openBrowser"
     },
     "4000": {
       "label": "API server",
