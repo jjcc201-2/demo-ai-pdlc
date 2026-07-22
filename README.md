@@ -103,6 +103,16 @@ a BYOK setup — see the SDK docs) is required either way.
 
 ### Run the app
 
+#### Option 1: GitHub Codespaces (recommended)
+
+This repo includes a [dev container](.devcontainer/devcontainer.json) that spins up a ready-to-go environment - Node.js, pnpm, and the Azure CLI are preinstalled, and `pnpm install` + `pnpm build` run automatically on creation. This is the fastest way to get started and avoids any local setup:
+
+1. Click **Code -> Codespaces -> Create codespace on main** on GitHub (or run `gh codespace create` from the CLI).
+2. Once the codespace finishes building, copy `.env.example` to `.env` (already done for you) and fill in the tokens you need - see [Configuration](#configuration).
+3. Open two terminals and run `pnpm dev-api` and `pnpm dev-web` as described below. Codespaces will automatically forward and offer to open ports `3000` (Next.js UI) and `4000` (API server).
+
+#### Option 2: Local IDE
+
 Open two terminals in the project root.
 
 **Terminal 1 - API server** (must show `[pdlc-api] listening on http://localhost:4000`):
