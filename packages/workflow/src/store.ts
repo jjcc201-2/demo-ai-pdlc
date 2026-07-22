@@ -3,6 +3,14 @@ import path from "node:path";
 import type { WorkflowState } from "./state.js";
 
 /**
+ * Run IDs are generated with `nanoid` (URL-safe alphanumerics, `_`, `-`).
+ * Any value outside this shape is rejected before it ever touches the
+ * filesystem, since runId ultimately comes from request input (e.g. the
+ * `:id` route param) and is used to build a file path.
+ */
+const RUN_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
+
+/**
  * Persistent storage layer for workflow run states.
  *
  * Manages serialization and persistence of WorkflowState objects to disk,
@@ -17,8 +25,29 @@ export class WorkflowStore {
    */
   constructor(private readonly rootDir: string) {}
 
+  /**
+   * Validate a runId is a plain, single-segment identifier before it is used
+   * to build a filesystem path. Rejects anything containing path separators,
+   * traversal sequences ("..") or other unexpected characters.
+   *
+   * @throws Error if runId is not a safe identifier
+   */
+  private assertSafeRunId(runId: string): void {
+    if (!RUN_ID_PATTERN.test(runId)) {
+      throw new Error(`Invalid runId: ${JSON.stringify(runId)}`);
+    }
+  }
+
   private runDir(runId: string) {
-    return path.join(this.rootDir, runId);
+    this.assertSafeRunId(runId);
+    const dir = path.join(this.rootDir, runId);
+    // Defence in depth: confirm the resolved path is still inside rootDir.
+    const resolvedRoot = path.resolve(this.rootDir) + path.sep;
+    const resolvedDir = path.resolve(dir);
+    if (!(resolvedDir + path.sep).startsWith(resolvedRoot)) {
+      throw new Error(`Invalid runId: ${JSON.stringify(runId)}`);
+    }
+    return dir;
   }
 
   private statePath(runId: string) {
