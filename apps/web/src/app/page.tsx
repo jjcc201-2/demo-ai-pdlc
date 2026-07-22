@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { API_BASE, api, authHeaders, checkApiHealth, type HealthInfo } from "@/lib/api";
+import { API_BASE, API_BASE_LABEL, api, authHeaders, checkApiHealth, type HealthInfo } from "@/lib/api";
 
 interface RunSummary {
   runId: string;
@@ -37,7 +37,7 @@ export default function Home() {
         up = await fetch(`${API_BASE}/api/runs/${run.runId}/transcript/upload`, { method: "POST", body: fd, headers: authHeaders() });
       } catch (e) {
         throw new Error(
-          `Could not reach the API at ${API_BASE} while uploading. Is the API server running? Start it with \`pnpm dev:api\`.`,
+          `Could not reach the API at ${API_BASE_LABEL} while uploading. Is the API server running? Start it with \`pnpm dev-api\`.`,
         );
       }
       if (!up.ok) throw new Error(`Upload failed: ${up.status} ${await up.text()}`);
@@ -59,7 +59,7 @@ export default function Home() {
       {health === "loading" && <p className="muted small">Checking API…</p>}
       {health === null && (
         <div className="card danger">
-          <strong>⚠️ API is not reachable at <code>{API_BASE}</code>.</strong>
+          <strong>⚠️ API is not reachable at <code>{API_BASE_LABEL}</code>.</strong>
           <p style={{ margin: "8px 0 0" }} className="small">
             Open a terminal and run <code>pnpm dev-api</code> in the project root, then reload this page.
           </p>
@@ -74,7 +74,7 @@ export default function Home() {
           <span className="pill pending">
             GitHub publisher: {health.features.githubPublisher ? "on" : "off"}
           </span>
-          <span className="muted">· {API_BASE}</span>
+          <span className="muted">· {API_BASE_LABEL}</span>
         </div>
       )}
 

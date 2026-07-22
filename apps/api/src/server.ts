@@ -34,6 +34,16 @@ const allowedOrigins = (process.env.PDLC_ALLOWED_ORIGINS ?? "http://localhost:30
   .split(",")
   .map((o) => o.trim())
   .filter(Boolean);
+// When running in a GitHub Codespace, the web UI is served from a forwarded
+// origin like https://<name>-3000.app.github.dev. Auto-allow it so a browser
+// that talks to the API directly (i.e. NEXT_PUBLIC_API_BASE points at the
+// forwarded API URL, bypassing the same-origin proxy) isn't blocked by CORS.
+// The default path uses Next.js's same-origin /api proxy and never hits this.
+const codespaceName = process.env.CODESPACE_NAME;
+const codespaceDomain = process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN;
+if (codespaceName && codespaceDomain) {
+  allowedOrigins.push(`https://${codespaceName}-3000.${codespaceDomain}`);
+}
 app.use(
   cors({
     origin(origin, cb) {

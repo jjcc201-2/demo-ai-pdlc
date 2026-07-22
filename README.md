@@ -109,7 +109,13 @@ This repo includes a [dev container](.devcontainer/devcontainer.json) that spins
 
 1. Click **Code -> Codespaces -> Create codespace on main** on GitHub (or run `gh codespace create` from the CLI).
 2. Once the codespace finishes building, copy `.env.example` to `.env` (already done for you) and fill in the tokens you need - see [Configuration](#configuration).
-3. Open two terminals and run `pnpm dev-api` and `pnpm dev-web` as described below. Codespaces will automatically forward and offer to open ports `3000` (Next.js UI) and `4000` (API server).
+3. Open two terminals and run `pnpm dev-api` and `pnpm dev-web`. Codespaces forwards and offers to open port `3000` (the UI).
+
+The web app talks to the API through a **same-origin proxy** (Next.js rewrites
+`/api/*` and `/health` to the API server), so you only ever open the forwarded
+web port — there's no cross-origin/CORS setup and no need to make the API port
+public. This works identically in Codespaces and locally. If you host the API
+separately, set `NEXT_PUBLIC_API_BASE` to its absolute URL to bypass the proxy.
 
 #### Option 2: Local IDE
 
