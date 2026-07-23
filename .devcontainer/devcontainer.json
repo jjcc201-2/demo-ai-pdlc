@@ -3,6 +3,7 @@
   "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
   "features": {
     "ghcr.io/devcontainers/features/azure-cli:1": {}
+    
   },
   "containerEnv": {
     "PORT": "4000"
@@ -18,7 +19,7 @@
       "onAutoForward": "notify"
     }
   },
-  "postCreateCommand": "corepack enable && corepack prepare pnpm@11.9.0 --activate && pnpm install && cp -n .env.example .env && pnpm build",
+  "postCreateCommand": "npm install -g @github/copilot && pnpm install && cp -n .env.example .env && pnpm build",
   "customizations": {
     "vscode": {
       "extensions": [
