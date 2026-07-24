@@ -290,6 +290,23 @@ code {
   align-items: center;
   gap: 16px;
   overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.55) rgba(15, 23, 42, 0.6);
+}
+.run-nav-inner::-webkit-scrollbar {
+  height: 8px;
+}
+.run-nav-inner::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 999px;
+}
+.run-nav-inner::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, var(--electric), var(--teal));
+  border-radius: 999px;
+  border: 2px solid rgba(11, 18, 32, 0.85);
+}
+.run-nav-inner::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, var(--electric-2), var(--teal-2));
 }
 .run-nav-label {
   font-size: 10px;
@@ -355,7 +372,11 @@ code {
 .run-nav-item.error .run-nav-num { background: rgba(248, 113, 113, 0.2); color: var(--danger); }
 .run-nav-item.active .run-nav-num { background: var(--electric); color: #fff; }
 
-.run-nav-name { font-weight: 500; }
+.run-nav-name { font-weight: 500; white-space: nowrap; }
+
+.run-nav-num {
+  flex-shrink: 0;
+}
 
 .run-nav-dot {
   width: 6px;
@@ -429,3 +450,88 @@ li { margin: 0.35rem 0; }
 table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid rgba(148, 163, 184, 0.15); }
 th { color: var(--slate-300); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; }
+
+
+/* ============================================================
+   Plan tree (Work Items stage preview)
+   ============================================================ */
+.plan-tree {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+}
+.plan-tree .plan-tree {
+  margin: 0;
+  padding-left: 22px;
+  border-left: 1px dashed rgba(148, 163, 184, 0.18);
+  margin-left: 10px;
+}
+.plan-node { position: relative; margin: 2px 0; }
+.plan-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--slate-100);
+  cursor: default;
+  text-align: left;
+  font: inherit;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.plan-row:hover { background: rgba(59, 130, 246, 0.08); }
+.plan-row[aria-expanded] { cursor: pointer; }
+.plan-row[aria-expanded="true"] {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+.plan-caret {
+  display: inline-block;
+  width: 12px;
+  color: var(--slate-500);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+.plan-caret.invisible { visibility: hidden; }
+
+.plan-type {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  text-transform: uppercase;
+  flex-shrink: 0;
+  min-width: 76px;
+  text-align: center;
+}
+.plan-type.type-epic       { color: #c4b5fd; border-color: rgba(196, 181, 253, 0.4); background: rgba(139, 92, 246, 0.1); }
+.plan-type.type-feature    { color: var(--electric-2); border-color: rgba(96, 165, 250, 0.4); background: rgba(59, 130, 246, 0.1); }
+.plan-type.type-user-story { color: var(--teal-2); border-color: rgba(45, 212, 191, 0.4); background: rgba(45, 212, 191, 0.08); }
+.plan-type.type-task       { color: #fbbf24; border-color: rgba(251, 191, 36, 0.4); background: rgba(251, 191, 36, 0.08); }
+.plan-type.type-bug        { color: #f87171; border-color: rgba(248, 113, 113, 0.4); background: rgba(248, 113, 113, 0.08); }
+
+.plan-title { flex: 1; font-size: 13px; }
+
+.plan-detail {
+  margin: 4px 0 6px 34px;
+  padding: 8px 12px;
+  background: rgba(15, 23, 42, 0.5);
+  border-left: 2px solid rgba(59, 130, 246, 0.35);
+  border-radius: 0 6px 6px 0;
+}
+.plan-detail p { margin: 0 0 6px; }
+.plan-ac {
+  white-space: pre-wrap;
+  margin: 0 0 6px;
+  padding: 6px 8px;
+  background: rgba(2, 6, 23, 0.5);
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--slate-300);
+}

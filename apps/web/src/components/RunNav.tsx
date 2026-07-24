@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 type StageStatus = "pending" | "in_progress" | "done" | "error";
 
 interface StageDef {
-  id: "ingest" | "analyze" | "grill" | "draft" | "review" | "publish";
+  id: "ingest" | "analyze" | "grill" | "draft" | "review" | "publish" | "ado";
   label: string;
   href?: (runId: string) => string;
 }
@@ -18,6 +18,7 @@ const STAGES: StageDef[] = [
   { id: "draft", label: "Draft", href: (id) => `/runs/${id}/review` },
   { id: "review", label: "Review", href: (id) => `/runs/${id}/review` },
   { id: "publish", label: "Publish", href: (id) => `/runs/${id}/review` },
+  { id: "ado", label: "Work Items", href: (id) => `/runs/${id}/ado` },
 ];
 
 export default function RunNav() {
@@ -53,7 +54,8 @@ export default function RunNav() {
               // Highlight the specific sub-stage the user is likely viewing
               && (
                 (s.id === "grill" && pathname.endsWith("/grill")) ||
-                (["draft", "review", "publish"].includes(s.id) && pathname.endsWith("/review"))
+                (["draft", "review", "publish"].includes(s.id) && pathname.endsWith("/review")) ||
+                (s.id === "ado" && pathname.endsWith("/ado"))
               );
             const clickable = reached && !!href;
 

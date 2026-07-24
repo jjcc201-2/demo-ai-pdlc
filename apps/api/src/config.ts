@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "./load-env.js";
 import path from "node:path";
 
 function bool(v: string | undefined, def = false): boolean {
@@ -28,9 +28,17 @@ export const config = {
     branch: process.env.GITHUB_BRANCH ?? "main",
     pathPrefix: process.env.GITHUB_PATH_PREFIX ?? "docs/brd",
   },
+  ado: {
+    organization: process.env.PDLC_ADO_ORG,
+    defaultProject: process.env.PDLC_ADO_DEFAULT_PROJECT,
+  },
 };
 
 export function githubPublisherConfigured(): boolean {
   const g = config.github;
   return Boolean(g.token && g.owner && g.repo);
+}
+
+export function adoAgentConfigured(): boolean {
+  return Boolean(config.ado.organization);
 }

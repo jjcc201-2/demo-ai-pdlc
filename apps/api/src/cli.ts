@@ -5,7 +5,7 @@
  * Grilling answers are read from stdin (one line per question) so the CLI can
  * be piped or used interactively for smoke tests.
  */
-import "dotenv/config";
+import "./load-env.js";
 import path from "node:path";
 import readline from "node:readline/promises";
 import { promises as fs } from "node:fs";
@@ -19,14 +19,22 @@ import { buildWorkflow } from "./workflow.js";
 async function main() {
   const [, , file, ...rest] = process.argv;
   if (!file) {
-    console.error("Usage: pnpm run:cli -- <transcript.vtt|.docx|.txt> [--subject \"...\"]");
+    console.error("Usage: pnpm run:cli -- <transcript.vtt|.docx|.txt> [--subject \"...\"] [--force]");
     process.exit(1);
   }
   const subjectIdx = rest.indexOf("--subject");
   const subject = subjectIdx >= 0 ? rest[subjectIdx + 1] : undefined;
+  const force = rest.includes("--force");
 
-  const buf = await fs.readFile(file);
-  const lower = file.toLowerCase();
+  // `pnpm --filter @pdlc/api run cli` runs this script with apps/api as its
+  // cwd, but the README documents the command run from the repo root. pnpm
+  // sets INIT_CWD to wherever the user actually invoked `pnpm` from, so
+  // resolve relative paths against that instead of process.cwd().
+  const invokedFrom = process.env.INIT_CWD ?? process.cwd();
+  const filePath = path.isAbsolute(file) ? file : path.resolve(invokedFrom, file);
+
+  const buf = await fs.readFile(filePath);
+  const lower = filePath.toLowerCase();
   const transcript = lower.endsWith(".vtt")
     ? parseVtt(buf.toString("utf8"), { meetingSubject: subject })
     : lower.endsWith(".docx")
@@ -79,9 +87,21 @@ async function main() {
   console.log(`[pdlc] review ✓ (${reviewed.review!.findings.length} findings, passed=${reviewed.review!.passed})`);
 
   if (!reviewed.review!.passed) {
-    console.error("[pdlc] blocked by critical review findings — see state.json");
-    await agent.close();
-    process.exit(2);
+    if (!force) {
+      console.error(
+        "[pdlc] blocked by critical review findings — see state.json. " +
+          "Re-run with --force to override and publish anyway.",
+      );
+      await agent.close();
+      process.exit(2);
+    }
+    console.warn(
+      `[pdlc] ⚠ ${reviewed.review!.findings.filter((f) => f.severity === "critical").length} ` +
+        "critical finding(s) present — publishing anyway (--force).",
+    );
+    const cur = await store.load(runId);
+    cur.publishForce = true;
+    await store.save(cur);
   }
 
   const published = await orchestrator.runStage(runId, "publish");

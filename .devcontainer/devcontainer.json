@@ -1,0 +1,37 @@
+{
+  "name": "PDLC - AI-Assisted Product Development Lifecycle Workflow",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/azure-cli:1": {}
+    
+  },
+  "containerEnv": {
+    "PORT": "4000"
+  },
+  "forwardPorts": [3000, 4000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Next.js UI",
+      "onAutoForward": "openBrowser"
+    },
+    "4000": {
+      "label": "API server",
+      "onAutoForward": "notify"
+    }
+  },
+  "postCreateCommand": "npm install -g @github/copilot && pnpm install && cp -n .env.example .env && pnpm build",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
+      ],
+      "settings": {
+        "editor.formatOnSave": true
+      }
+    }
+  },
+  "remoteUser": "node"
+}
