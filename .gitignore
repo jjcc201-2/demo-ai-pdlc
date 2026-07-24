@@ -5,9 +5,9 @@ dist/
 *.tsbuildinfo
 .env
 .env.local
-runs/
+/apps/api/runs/
 out/
-!runs/.gitkeep
+!/apps/api/runs/.gitkeep
 !out/.gitkeep
 coverage/
 .DS_Store
