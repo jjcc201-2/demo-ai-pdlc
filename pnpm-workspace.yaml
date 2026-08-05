@@ -3,12 +3,9 @@ packages:
   - "packages/*"
 allowBuilds:
   esbuild: true
+  koffi: true
   sharp: true
 autoInstallPeers: true
 ignoreMissingBuildScripts: true
 minimumReleaseAgeExclude:
-  - '@github/copilot-sdk@1.0.5'
-
-onlyBuiltDependencies:
-  - esbuild
-  - sharp
+  - "@github/copilot-sdk@1.0.5"
