@@ -72,6 +72,9 @@ This repo includes a [dev container](.devcontainer/devcontainer.json) that spins
 
 1. Click **Code -> Codespaces -> Create codespace on main** on GitHub (or run `gh codespace create` from the CLI).
 
+   <img src="assets/codespace.png" alt="alt text" width="500" height="200">
+   
+
 2. (Optional) open up a terminal in the codespace and run:
 
    ```bash
