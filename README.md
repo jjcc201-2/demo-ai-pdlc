@@ -1,5 +1,7 @@
 # PDLC — AI-Assisted Product Development Lifecycle Workflow
 
+![alt text](assets/homepage.png)
+
 An AI workflow, built on the [GitHub Copilot SDK](https://github.com/github/copilot-sdk), that turns a Teams meeting into a Business Requirements Document (BRD) — and optionally into a series of epics, features and user stories.
 
 ## Contents
