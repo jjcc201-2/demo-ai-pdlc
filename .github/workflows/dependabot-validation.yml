@@ -1,0 +1,78 @@
+name: Dependabot dependency validation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependabot-validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.user.login == 'dependabot[bot]'
+    name: Build, test, and homepage smoke check
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --ipc=host
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out pull request
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.9.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspace
+        id: build
+        run: pnpm build
+
+      - name: Run unit tests
+        id: unit_tests
+        run: pnpm test
+
+      - name: Run homepage smoke check
+        id: smoke
+        run: pnpm test:smoke
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: homepage-smoke-${{ github.event.pull_request.number || format('manual-{0}', github.run_id) }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Write validation summary
+        if: always()
+        run: |
+          {
+            echo "## Dependabot dependency validation"
+            echo
+            echo "| Check | Result |"
+            echo "| --- | --- |"
+            echo "| Build | \`${{ steps.build.outcome }}\` |"
+            echo "| Unit tests | \`${{ steps.unit_tests.outcome }}\` |"
+            echo "| Homepage smoke check | \`${{ steps.smoke.outcome }}\` |"
+            echo
+            echo "The \`homepage-smoke-${{ github.event.pull_request.number || format('manual-{0}', github.run_id) }}\` artifact contains the homepage screenshot and Playwright diagnostics."
+          } >> "$GITHUB_STEP_SUMMARY"

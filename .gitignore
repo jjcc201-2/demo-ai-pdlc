@@ -10,4 +10,6 @@ out/
 !/apps/api/runs/.gitkeep
 !out/.gitkeep
 coverage/
+playwright-report/
+test-results/
 .DS_Store

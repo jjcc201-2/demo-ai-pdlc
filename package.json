@@ -11,14 +11,16 @@
     "dev:api": "pnpm --filter @pdlc/api run dev",
     "dev:web": "pnpm --filter @pdlc/web run dev",
     "test": "pnpm -r run test",
+    "test:smoke": "playwright test",
     "lint": "pnpm -r run lint",
     "cli": "pnpm --filter @pdlc/api run cli",
     "run:cli": "pnpm --filter @pdlc/api run cli"
   },
   "devDependencies": {
-    "typescript": "^5.6.3",
+    "@playwright/test": "1.62.1",
     "@types/node": "^22.9.0",
     "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
     "vitest": "^3.2.6"
   },
   "engines": {
